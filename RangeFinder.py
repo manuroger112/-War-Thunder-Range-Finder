@@ -2,20 +2,24 @@ import tkinter as tk
 import math
 
 root = tk.Tk()
-root.geometry("400x400")
+root.geometry("600x400")
 
-root.attributes('-alpha', 0.5)
+root.attributes('-alpha', 0.35)
 root.title("manuroger112's range calculator")
+root.config(bg = "green")
 
-canvas = tk.Canvas(root, width=600, height=600, bg= "black")
-canvas.pack()
+canvas = tk.Canvas(root, width=500, height=500, bg= "black")
+canvas.place(x=0, y= 0)
 
 class gls:
-    pxLabelOffset = 10
+    pxLabelOffset = 5
     Distance = 200.0
     NormUnit = 250.0
+    
+    BaseNorms = [150, 200, 225, 250, 325, 400, 500, 550]
+    NormSelection = 3
+    
     Range = (Distance/NormUnit) * 250
-    PrecisionCoefficient = 0.9
     
 Globals = gls()
 
@@ -35,24 +39,35 @@ def MouseDrag(event):
 
     canvas.coords(RangeLine, Point1.winfo_x()+Globals.pxLabelOffset, Point1.winfo_y()+Globals.pxLabelOffset, Point2.winfo_x()+Globals.pxLabelOffset, Point2.winfo_y() + Globals.pxLabelOffset)
     Globals.Distance = round(math.sqrt(math.pow((Point2.winfo_x() - Point1.winfo_x()), 2)+math.pow((Point2.winfo_y() - Point1.winfo_y()), 2)))
-    Globals.Range = round(((Globals.Distance/Globals.NormUnit) * 250) * Globals.PrecisionCoefficient) #times 0.9 as 0.9 is coefficient found through studies in wt of how much the calculated range is in comparison to actual range over different resolutions
+    Globals.Range = round(((Globals.Distance/Globals.NormUnit) * Globals.BaseNorms[Globals.NormSelection])) #times 0.9 as 0.9 is coefficient found through studies in wt of how much the calculated range is in comparison to actual range over different resolutions
     TextDistance.config(text=f"Distance: {Globals.Distance} pixels | Range = {Globals.Range} Meters")
 
 def SetNormalizer():
-    
     Globals.NormUnit = abs(Point2.winfo_x() - Point1.winfo_x())
-    NormalizedUnit.config(text=f"Normalized Unit = {Globals.NormUnit} pixels for 250 Meters")
+    NormalizedUnit.config(text=f"Normalized Unit = {Globals.NormUnit} pixels for {Globals.BaseNorms[Globals.NormSelection]} Meters")
 
-Point1 = tk.Label(canvas, text="+", width = 2, height = 1, bg="green")
-Point2 = tk.Label(canvas, text="+", width = 2, height = 1, bg="red")
+def SetBaseNorm():
+    Globals.NormSelection = (Globals.NormSelection+1)%len(Globals.BaseNorms)
+    Globals.Distance = round(math.sqrt(math.pow((Point2.winfo_x() - Point1.winfo_x()), 2)+math.pow((Point2.winfo_y() - Point1.winfo_y()), 2)))
+    Globals.Range = round(((Globals.Distance/Globals.NormUnit) * Globals.BaseNorms[Globals.NormSelection]))
+    NormalizedUnit.config(text=f"Normalized Unit = {Globals.NormUnit} pixels for {Globals.BaseNorms[Globals.NormSelection]} Meters")
+    TextDistance.config(text=f"Distance: {Globals.Distance} pixels | Range = {Globals.Range} Meters")
+
+image = tk.PhotoImage(file="crossaim.png")
+
+Point1 = tk.Label(canvas, image=image)
+Point2 = tk.Label(canvas, image=image)
 
 TextDistance = tk.Label(canvas, text=f"Distance:{Globals.Distance} pixels | Range = {Globals.Range} Meters", relief=tk.RAISED, font=("Impact", 12, "italic"), width = 40, height = 1);
 TextDistance.place(x=0, y=0)
 
-SetUnitNormalizer = tk.Button(root, text="Set Unit Norm", width = 10, font=("Impact", 9, ""), height = 2, command=SetNormalizer)
-SetUnitNormalizer.place(x=240, y=30)
+SetUnitNormalizer = tk.Button(root, text="Set Unit Norm", width = 11, font=("Impact", 9, ""), height = 2, command=SetNormalizer)
+SetUnitNormalizer.place(x=510, y=30)
 
-NormalizedUnit = tk.Label(root, text=f"Normalized Unit = {Globals.NormUnit} pixels for 250 Meters", font=("Impact", 8, "italic"))
+SetBaseNormalizator = tk.Button(root, text="BASE GRID SIZE", width = 11, font=("Impact", 9, ""), height = 2, command=SetBaseNorm)
+SetBaseNormalizator.place(x=510, y=90)
+
+NormalizedUnit = tk.Label(root, text=f"Normalized Unit = {Globals.NormUnit} pixels for {Globals.BaseNorms[Globals.NormSelection]} Meters", font=("Impact", 8, "italic"))
 NormalizedUnit.place(x=0, y= 25)
 
 Point1.place(x=0, y=200)
@@ -66,5 +81,4 @@ Point2.bind("<B1-Motion>", MouseDrag)
 
 
 RangeLine = canvas.create_line(0+Globals.pxLabelOffset, 200+Globals.pxLabelOffset, 200, 200+Globals.pxLabelOffset, fill="green", width=1)
-
 root.mainloop()
